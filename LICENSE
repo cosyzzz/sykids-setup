@@ -1,0 +1,25 @@
+Copyright (c) 2026 SYKids Protection Platform. All rights reserved.
+
+AUTHORIZED ENDPOINT BOOTSTRAP NOTICE
+------------------------------------
+This repository contains public command-line bootstrap scripts solely intended
+for authorized SYKids parents and administrators to provision enrolled family
+or school devices using a valid one-time installation ticket issued from an
+authenticated SYKids Dashboard.
+
+1. Scope of Permission
+   Authorized SYKids users are permitted to download, inspect, and execute the
+   CLI bootstrap scripts in this repository for the sole purpose of enrolling
+   devices they own or are legally authorized to manage.
+
+2. Proprietary Core Software
+   All core SYKids Server software, SYKids Windows/Linux/Android Client agents,
+   installer binaries, protocols, and associated intellectual property remain
+   strictly proprietary and confidential property of SYKids Protection Platform.
+   No license or right to redistribute, reverse-engineer, modify, or sublicense
+   the core SYKids Server or Client binaries is granted by this repository.
+
+3. Disclaimer
+   THE BOOTSTRAP SCRIPTS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
