@@ -1,212 +1,140 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+# ============================================================================
+# Cosy Classroom System — Linux Workstation Quick Bootstrap (Ubuntu/Debian)
+# ============================================================================
+set -euo pipefail
 
-SERVER_URL="${SYKIDS_SERVER:-https://sykids.tail983a96.ts.net}"
+# Auto-elevate via sudo if executed as non-root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "[Cosy] Can quyen root de cai dat dich vu he thong. Dang chuyen sang sudo..."
+    exec sudo -E bash "$0" "$@"
+fi
+
+SERVER_URL="${SYKIDS_SERVER:-}"
 TICKET="${SYKIDS_TICKET:-}"
 VERBOSE=0
-ORIG_ARGS=("$@")
 
-usage() {
-  cat <<'EOF'
-Cách dùng (SYKids Xubuntu/Linux Setup):
-  curl -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN>
+print_usage() {
+    cat <<EOF
+Cosy Classroom System — Linux Installer
 
-Tùy chọn:
-  -t, --ticket <MA_VE>   Mã vé cài đặt 1 lần lấy từ Dashboard SYKids
-  -s, --server <URL>     Địa chỉ máy chủ SYKids (mặc định: https://sykids.tail983a96.ts.net)
-  -v, --verbose          Hiển thị chi tiết nhật ký cài đặt
-  -h, --help             Hiển thị hướng dẫn này
+Cu phap:
+  sudo bash setup-xubuntu.sh [TUY_CHON]
+
+Tuy chon:
+  -s, --server <URL>    Dia chi may chu Cosy Classroom (Vi du: https://sykids.dpdns.org)
+  -t, --ticket <TICKET> Ma ve ghi danh lop hoc (khong bat buoc)
+  -v, --verbose         Hien thi chi tiet qua trinh cai dat
+  -h, --help            Hien thi huong dan nay
 EOF
+    exit 0
 }
 
-while [ $# -gt 0 ]; do
-  case "$1" in
-    -t|--ticket)
-      if [ $# -lt 2 ]; then
-        printf '\033[31m[SYKids] Thiếu giá trị cho tùy chọn %s.\033[0m\n' "$1" >&2
-        usage >&2
-        exit 1
-      fi
-      TICKET="$2"
-      shift 2
-      ;;
-    --ticket=*|-t=*)
-      TICKET="${1#*=}"
-      shift
-      ;;
-    -s|--server)
-      if [ $# -lt 2 ]; then
-        printf '\033[31m[SYKids] Thiếu giá trị cho tùy chọn %s.\033[0m\n' "$1" >&2
-        usage >&2
-        exit 1
-      fi
-      SERVER_URL="$2"
-      shift 2
-      ;;
-    --server=*|-s=*)
-      SERVER_URL="${1#*=}"
-      shift
-      ;;
-    -v|--verbose)
-      VERBOSE=1
-      shift
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    --)
-      shift
-      if [ $# -gt 0 ] && [ -z "$TICKET" ]; then
-        TICKET="$1"
-      fi
-      break
-      ;;
-    -*)
-      printf '\033[31m[SYKids] Tùy chọn không hợp lệ: %s\033[0m\n' "$1" >&2
-      usage >&2
-      exit 1
-      ;;
-    *)
-      if [ -z "$TICKET" ]; then
-        TICKET="$1"
-      fi
-      shift
-      ;;
-  esac
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s|--server)
+            SERVER_URL="$2"
+            shift 2
+            ;;
+        -t|--ticket)
+            TICKET="$2"
+            shift 2
+            ;;
+        -v|--verbose)
+            VERBOSE=1
+            shift
+            ;;
+        -h|--help)
+            print_usage
+            ;;
+        *)
+            if [[ "$1" =~ ^https?:// ]]; then
+                SERVER_URL="$1"
+            elif [ -z "$TICKET" ]; then
+                TICKET="$1"
+            fi
+            shift
+            ;;
+    esac
 done
 
-if [ "${#ORIG_ARGS[@]}" -gt 0 ]; then
-  set -- "${ORIG_ARGS[@]}"
-else
-  set --
-fi
+echo "============================================================================"
+echo "  Cosy Classroom System — Linux Workstation Setup (Ubuntu / Debian)        "
+echo "============================================================================"
 
-while [[ "$SERVER_URL" == */ ]]; do
-  SERVER_URL="${SERVER_URL%/}"
-done
-
-if [[ ! "$SERVER_URL" =~ ^https?://[^[:space:]/][^[:space:]]*$ ]]; then
-  printf '\033[31m[SYKids] Địa chỉ máy chủ không hợp lệ: %s (phải bắt đầu bằng https:// hoặc http://).\033[0m\n' "$SERVER_URL" >&2
-  exit 1
-fi
-
-if [ -z "$TICKET" ]; then
-  printf '\033[31m[SYKids] Thiếu mã vé cài đặt 1 lần.\033[0m\n' >&2
-  usage >&2
-  exit 1
-fi
-
-if ! ( LC_ALL=C; [[ "$TICKET" =~ ^[A-Za-z0-9._~+/-]+=*$ ]] ); then
-  printf '\033[31m[SYKids] Mã vé cài đặt không hợp lệ.\033[0m\n' >&2
-  usage >&2
-  exit 1
-fi
-
-if [ "$(id -u)" -ne 0 ]; then
-  if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ] && [ "${CP_NO_SUDO_REEXEC:-0}" != "1" ]; then
-    CP_NO_SUDO_REEXEC=1 exec sudo -E bash "${BASH_SOURCE[0]}" "$@"
-  else
-    printf '\033[31m[SYKids] Vui lòng chạy với sudo: curl -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN>\033[0m\n' >&2
-    exit 1
-  fi
-fi
-
-show_step() {
-  local pct="${1:-0}"
-  if [ "$pct" -lt 0 ]; then pct=0; fi
-  if [ "$pct" -gt 100 ]; then pct=100; fi
-  local filled=$(( pct * 20 / 100 ))
-  local hashes="####################"
-  local dashes="--------------------"
-  local bar="${hashes:0:filled}${dashes:0:20-filled}"
-  printf '\r\033[36m[SYKids] Đang thiết lập dịch vụ... [%s] %3d%%\033[0m   ' "$bar" "$pct"
-}
-
-show_step 0
-
-TMP_DIR="$(mktemp -d /tmp/sykids-setup.XXXXXX)"
+# Tao thu muc tam an toan
+TMP_DIR="$(mktemp -d -t cosy-setup-XXXXXX)"
 chmod 700 "$TMP_DIR"
-INST_PID=""
-
 cleanup() {
-  if [ -n "$INST_PID" ] && kill -0 "$INST_PID" 2>/dev/null; then
-    kill "$INST_PID" 2>/dev/null || true
-  fi
-  if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
     rm -rf "$TMP_DIR"
-  fi
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
-if ! command -v curl >/dev/null 2>&1; then
-  if ! ( DEBIAN_FRONTEND=noninteractive apt-get update -y -qq >/dev/null 2>&1 && \
-         DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl ca-certificates >/dev/null 2>&1 ); then
-    printf '\n\033[31m[SYKids] Không thể cài đặt gói phụ thuộc (curl, ca-certificates).\033[0m\n' >&2
-    exit 1
-  fi
+# [1/4] (25%) Resolve SERVER_URL
+echo "[Cosy] [1/4] (25%) Dang xac dinh may chu Cosy Classroom..."
+if [ -z "$SERVER_URL" ]; then
+    BEACON_FILE="$TMP_DIR/beacon.txt"
+    if curl --retry 2 --connect-timeout 5 --max-time 10 -fsSL "https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/beacon.txt" -o "$BEACON_FILE" 2>/dev/null; then
+        if [ -s "$BEACON_FILE" ]; then
+            BEACON_LINE="$(head -n 1 "$BEACON_FILE")"
+            BEACON_HEADER="$(echo "$BEACON_LINE" | cut -d'|' -f1)"
+            BEACON_WS="$(echo "$BEACON_LINE" | cut -d'|' -f2)"
+            if [ "$BEACON_HEADER" = "SYKIDS-BEACON-V2" ] && [ -n "$BEACON_WS" ]; then
+                CANDIDATE="${BEACON_WS/wss:\/\//https:\/\/}"
+                CANDIDATE="${CANDIDATE/ws:\/\//http:\/\/}"
+                CANDIDATE="${CANDIDATE%/ws}"
+                
+                HTTP_CODE="$(curl -sS -I -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 8 "$CANDIDATE/cosy/linux.sh" 2>/dev/null || true)"
+                if [ "$HTTP_CODE" = "200" ]; then
+                    SERVER_URL="$CANDIDATE"
+                fi
+            fi
+        fi
+    fi
 fi
 
-show_step 15
+if [ -z "$SERVER_URL" ]; then
+    SERVER_URL="https://sykids.dpdns.org"
+fi
+echo "[Cosy] [1/4] May chu duoc chon: $SERVER_URL"
 
-show_step 30
-HTTP_CODE="$(curl -sSL -w '%{http_code}' --connect-timeout 15 --max-time 60 --get --data-urlencode "t=${TICKET}" "${SERVER_URL}/install-xubuntu.sh" -o "$TMP_DIR/install.sh" || true)"
-HTTP_CODE="${HTTP_CODE:-000}"
+# [2/4] (50%) Download upstream linux installer script
+echo "[Cosy] [2/4] (50%) Dang tai kich ban cai dat he thong tu may chu..."
+UPSTREAM_SCRIPT="$TMP_DIR/cosy-linux.sh"
+AUTH_QUERY=""
+if [ -n "$TICKET" ]; then
+    AUTH_QUERY="?t=$(echo -n "$TICKET" | tr -d '\r\n')"
+fi
 
-case "$HTTP_CODE" in
-  200)
-    if [ ! -s "$TMP_DIR/install.sh" ]; then
-      printf '\n\033[31m[SYKids] Không thể tải trình cài đặt từ máy chủ (HTTP %s).\033[0m\n' "$HTTP_CODE" >&2
-      exit 1
-    fi
-    ;;
-  401|403)
-    printf '\n\033[31m[SYKids] Vé cài đặt không hợp lệ hoặc đã được sử dụng (mỗi vé chỉ dùng 1 lần). Hãy lấy vé mới trên Dashboard.\033[0m\n' >&2
+if ! curl --retry 3 --retry-all-errors -fsSL --connect-timeout 15 --max-time 60 "${SERVER_URL}/cosy/linux.sh${AUTH_QUERY}" -o "$UPSTREAM_SCRIPT"; then
+    echo "[!] Loi: Khong the tai kich ban /cosy/linux.sh tu $SERVER_URL"
     exit 1
-    ;;
-  410)
-    printf '\n\033[31m[SYKids] Vé cài đặt đã hết hạn. Hãy lấy vé mới trên Dashboard.\033[0m\n' >&2
-    exit 1
-    ;;
-  *)
-    printf '\n\033[31m[SYKids] Không thể tải trình cài đặt từ máy chủ (HTTP %s).\033[0m\n' "$HTTP_CODE" >&2
-    exit 1
-    ;;
-esac
+fi
+chmod 700 "$UPSTREAM_SCRIPT"
 
-show_step 50
-chmod 700 "$TMP_DIR/install.sh"
-
+# [3/4] (75%) Execute upstream installer
+echo "[Cosy] [3/4] (75%) Dang thiet lap cac dich vu giam sat lop hoc..."
 if [ "$VERBOSE" -eq 1 ]; then
-  printf '\n'
-  RC=0
-  bash "$TMP_DIR/install.sh" --verbose </dev/null || RC=$?
-  if [ "$RC" -ne 0 ]; then
-    printf '\033[31m[SYKids] Cài đặt dịch vụ thất bại (mã lỗi %d).\033[0m\n' "$RC" >&2
-    exit "$RC"
-  fi
-  show_step 100
+    bash "$UPSTREAM_SCRIPT"
 else
-  bash "$TMP_DIR/install.sh" </dev/null >"$TMP_DIR/install.log" 2>&1 &
-  INST_PID=$!
-  PCT=55
-  while kill -0 "$INST_PID" 2>/dev/null; do
-    show_step "$PCT"
-    sleep 0.4
-    if [ "$PCT" -lt 92 ]; then
-      PCT=$(( PCT + 1 ))
-    fi
-  done
-
-  RC=0
-  wait "$INST_PID" || RC=$?
-  INST_PID=""
-  if [ "$RC" -ne 0 ]; then
-    printf '\n\033[31m[SYKids] Cài đặt dịch vụ thất bại (mã lỗi %d). Nhật ký chi tiết:\033[0m\n' "$RC" >&2
-    tail -n 20 "$TMP_DIR/install.log" >&2 || true
-    exit "$RC"
-  fi
+    bash "$UPSTREAM_SCRIPT" >/dev/null 2>&1 || bash "$UPSTREAM_SCRIPT"
 fi
 
-show_step 100
-printf '\n\033[32m[SYKids] Đã cài đặt xong dịch vụ — Thiết bị đã sẵn sàng kết nối!\033[0m\n'
+# [4/4] (100%) Verify systemd units
+echo "[Cosy] [4/4] (100%) Kiem tra trang thai dich vu he thong..."
+SVC_ACTIVE=0
+if systemctl is-active --quiet cpsv.service 2>/dev/null; then
+    echo "  [OK] cpsv.service (Cosy Protection Core) dang hoat dong."
+    SVC_ACTIVE=1
+fi
+if systemctl is-active --quiet cpwg.service 2>/dev/null; then
+    echo "  [OK] cpwg.service (Cosy Watchdog Service) dang hoat dong."
+    SVC_ACTIVE=1
+fi
+
+if [ "$SVC_ACTIVE" -eq 1 ]; then
+    echo "[Cosy] [100%] Da cai dat thanh cong dich vu he thong (cpsv.service / cpwg.service)!"
+else
+    echo "[Cosy] Hoan tat quy trinh cai dat. Kiem tra bang: sudo systemctl status cpsv.service cpwg.service"
+fi
+exit 0

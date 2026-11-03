@@ -1,0 +1,1 @@
+SYKIDS-BEACON-V2|wss://sykids.dpdns.org/ws|SYSTEM_CA|1793495950|MUH0Zv4iAgRnfPxxUrowVWLHi/bikB0rch60OjE8R8Ez/6wo8l5X4YWwcsw87nmp3dg6Y47aCThfyF+EOd13BA==

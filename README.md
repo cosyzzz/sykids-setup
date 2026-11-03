@@ -1,96 +1,77 @@
-# SYKids — Bộ Cài Đặt Nhanh Thiết Bị Đầu Cuối (Windows & Xubuntu)
+# Cosy Classroom — Bộ Cài Đặt Nhanh 1 Dòng (Windows & Linux)
 
-Kho lưu trữ này chỉ chứa các script khởi chạy dòng lệnh (`0% -> 100%`) dành riêng cho quản trị viên / phụ huynh triển khai nhanh **SYKids Endpoint Agent** thông qua **Mã vé cài đặt 1 lần (`<MA_VE_1_LAN>`)** cấp từ Dashboard.  
-*(Phiên bản bộ cài giao diện đồ họa `.exe` đầy đủ được cung cấp riêng trực tiếp trên Dashboard).*
-
----
-
-## 1. Lấy Mã Vé Cài Đặt 1 Lần (`<MA_VE_1_LAN>`)
-
-- **Bước 1:** Đăng nhập vào **SYKids Dashboard** bằng tài khoản quản trị viên / phụ huynh.
-- **Bước 2:** Tạo **Mã vé cài đặt 1 lần** mới *(mỗi vé chỉ kích hoạt duy nhất 01 thiết bị và tự hủy ngay sau khi cài xong để chống nhân bản ID)*.
-- **Bước 3:** Sao chép mã vé vừa tạo và thay thế vào vị trí `<MA_VE_1_LAN>` trong câu lệnh tương ứng bên dưới.
+Hệ thống triển khai tự động máy trạm học sinh và thiết bị phòng máy lớp học cho **Cosy Classroom / Child Protection System**.
 
 ---
 
-## 2. Lệnh Copy Nhanh Trên Windows (`Win + R` / `CMD` / `PowerShell`)
+## 1. Cài đặt trên Windows (Windows 10 / 11)
 
-- **Chạy từ `CMD` hoặc hộp thoại `Win + R`** *(tải script chuẩn về `%TEMP%` bằng `curl.exe` chính chủ Windows, hiển thị thanh tiến trình `0% -> 100%` và xác nhận quyền UAC chuẩn)*:
+Sử dụng lệnh cài đặt thuần native (`curl.exe` + `.cmd`), không yêu cầu cấu hình chính sách bảo mật script hay cài đặt thêm phần mềm phụ trợ trợ giúp.
+
+### Cách 1: Command Prompt (CMD) — Khuyên dùng
+
+Mở Command Prompt và dán lệnh sau:
 
 ```cmd
-cmd /c "curl.exe -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-windows.ps1 -o "%TEMP%\sykids-setup.ps1" && powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\sykids-setup.ps1" <MA_VE_1_LAN>"
+curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup.cmd -o "%TEMP%\cosy-setup.cmd" && "%TEMP%\cosy-setup.cmd"
 ```
 
-- **Chạy trực tiếp trong cửa sổ `PowerShell`**:
-
-```powershell
-curl.exe -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-windows.ps1 -o "$env:TEMP\sykids-setup.ps1"; powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\sykids-setup.ps1" "<MA_VE_1_LAN>"
-```
-
----
-
-## 3. Lệnh Copy Nhanh Trên Xubuntu / Ubuntu Linux (`Ctrl + Alt + T`)
-
-- Mở Terminal (`Ctrl + Alt + T`), dán câu lệnh 1 dòng *(hiển thị thanh tiến trình `0% -> 100%` và tự động đăng ký `cp-client.service`)*:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN>
-```
-
-- *(Hoặc dùng `wget` nếu máy chưa cài sẵn `curl`)*:
-
-```bash
-wget -qO- https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN>
-```
-
-- **Chế độ xem log chi tiết (`--verbose`)**:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN> --verbose
-```
-
----
-
-## 4. Tùy Chọn Máy Chủ Riêng & Xử Lý Lỗi Thường Gặp
-
-### Chỉ Định Máy Chủ Tùy Chỉnh (Đổi Tên Miền Riêng)
-
-Mặc định script kết nối tới máy chủ `https://sykids.tail983a96.ts.net`. Khi triển khai trên tên miền riêng, truyền thêm tham số `-Server` (Windows) hoặc `--server` (Linux):
-
-- **Windows (`PowerShell`):**
-
-```powershell
-curl.exe -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-windows.ps1 -o "$env:TEMP\sykids-setup.ps1"; powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\sykids-setup.ps1" "<MA_VE_1_LAN>" -Server "https://ten-mien-rieng.example.com"
-```
-
-- **Xubuntu / Ubuntu Linux:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh | sudo bash -s -- <MA_VE_1_LAN> --server "https://ten-mien-rieng.example.com"
-```
-
-### Bảng Mã Lỗi Cài Đặt Thường Gặp
-
-| Mã Lỗi / Hiện Tượng | Nguyên Nhân | Cách Xử Lý |
-| :--- | :--- | :--- |
-| **`HTTP 401` / `HTTP 403`** | Mã vé cài đặt bị nhập sai hoặc **đã được sử dụng trước đó** (vé tự hủy sau lần kích hoạt đầu tiên). | Tạo mã vé cài đặt 1 lần mới trên Dashboard và chạy lại lệnh. |
-| **`HTTP 410`** | Mã vé **đã hết hạn 48 giờ** kể từ thời điểm khởi tạo mà chưa kích hoạt. | Tạo mã vé cài đặt 1 lần mới trên Dashboard và chạy lại lệnh. |
-| **Lỗi kết nối TLS / HTTPS** | Máy đầu cuối mất kết nối mạng hoặc sai lệch ngày giờ hệ thống làm lỗi xác thực chứng chỉ SSL. | Đồng bộ lại ngày giờ tự động của hệ điều hành và kiểm tra kết nối Internet (`443/tcp`). |
-
-### Kiểm Tra Trạng Thái Dịch Vụ Sau Khi Cài Đặt
-
-- **Trên Windows (`CMD` / `PowerShell`):**
+Hoặc qua tên rút gọn:
 
 ```cmd
-sc query SYKidsService
+curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "%TEMP%\cosy-win.cmd" && "%TEMP%\cosy-win.cmd"
 ```
+
+### Cách 2: PowerShell (Không cần chỉnh ExecutionPolicy)
+
+Mở PowerShell và dán lệnh:
 
 ```powershell
-Get-Service SYKidsService
+curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup.cmd -o "$env:TEMP\cosy-setup.cmd"; & "$env:TEMP\cosy-setup.cmd"
 ```
 
-- **Trên Xubuntu / Ubuntu Linux:**
+### Kiểm tra dịch vụ Windows sau khi cài đặt
+
+```cmd
+sc query cpsv
+sc query cpwg
+```
+
+---
+
+## 2. Cài đặt trên Linux (Ubuntu / Xubuntu / Debian)
+
+Mở Terminal trên máy trạm Linux và thực thi lệnh:
 
 ```bash
-sudo systemctl status cp-client.service
+curl --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh -o /tmp/cosy-setup.sh && sudo bash /tmp/cosy-setup.sh
 ```
+
+Hoặc qua tên rút gọn:
+
+```bash
+curl --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/linux.sh -o /tmp/cosy-linux.sh && sudo bash /tmp/cosy-linux.sh
+```
+
+### Kiểm tra dịch vụ Linux sau khi cài đặt
+
+```bash
+sudo systemctl status cpsv.service cpwg.service
+```
+
+---
+
+## 3. Kiến trúc vận hành & Luồng bảo mật
+
+1. **Tự động dò tìm máy chủ (Zero Configuration Beacon)**:
+   - Bộ cài tự động truy vấn thông số WebSocket và CA qua `beacon.txt` được ký số từ xa.
+   - Hỗ trợ cơ chế dự phòng an toàn về máy chủ trung tâm `https://sykids.dpdns.org`.
+2. **Chứng chỉ gốc tin cậy (System CA)**:
+   - Tự động tích hợp chứng chỉ phòng học `CosySchoolCA.cer` vào kho lưu trữ hệ thống cục bộ.
+3. **Xác thực toàn vẹn nhị phân (SHA-256 Integrity Verification)**:
+   - Trực tiếp kiểm tra mã băm SHA-256 của `CPInstall.exe` thông qua tiện ích `certutil.exe` trước khi kích hoạt.
+4. **Dịch vụ chạy ngầm SYSTEM Privilege**:
+   - Khởi tạo và giám sát 3 thành phần cốt lõi:
+     - `cpsv`: Dịch vụ lõi hệ thống chạy ngầm tầng 0 (`Session 0 SYSTEM`).
+     - `cpwg`: Dịch vụ Watchdog bảo vệ chéo tầng 0 (`Session 0 SYSTEM`).
+     - `cpag`: Tác nhân phiên người dùng máy trạm học sinh.

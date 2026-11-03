@@ -1,40 +1,32 @@
-# Secrets, keys & credentials
-.env
-.env.*
-!.env.example
-!.env.template
-*.key
-*.pem
-*.pfx
-*.p12
-*.jks
-*.keystore
-*secret*
-*credential*
-id_rsa*
-id_ed25519*
-
-# Binaries & packages
+# Binaries & Executables
 *.exe
 *.dll
-*.so
-*.dylib
-*.apk
-*.aab
+*.msi
+*.sys
 
-# Logs & local databases
+# Certificates & Keys
+*.cer
+*.crt
+*.pfx
+*.p12
+*.key
+*.pem
+*.pass
+
+# C/C++ build artifacts & source
+*.cpp
+*.c
+*.h
+*.hpp
+*.inc
+*.obj
+*.pdb
+
+# Environment & Logs
+.env
+.env.*
 *.log
-*.sqlite
-*.sqlite3
-*.db
-*.db-shm
-*.db-wal
 
-# OS & editor junk
+# OS metadata
 .DS_Store
 Thumbs.db
-Desktop.ini
-*.swp
-*.swo
-*.tmp
-*.bak
