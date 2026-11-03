@@ -133,14 +133,20 @@ if "!BG_MODE!"=="1" (
     echo [%DATE% %TIME%] Cosy bootstrap worker started in Session 0 (SYSTEM) >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 )
 
-echo ============================================================================
-echo  Cosy Classroom System -- Windows Workstation Bootstrap
-echo ============================================================================
+set "SHOW_UI=0"
+if "!FG_MODE!"=="1" set "SHOW_UI=1"
+if "!VERIFY_ONLY!"=="1" set "SHOW_UI=1"
+
+if "!SHOW_UI!"=="1" (
+    echo ============================================================================
+    echo  Cosy Classroom System -- Windows Workstation Bootstrap
+    echo ============================================================================
+)
 
 set "WORK=%TEMP%\cosy_install_%RANDOM%_%RANDOM%"
 mkdir "%WORK%" 2>nul
 if not exist "%WORK%" (
-    echo [!] Could not create temporary directory: "%WORK%"
+    if "!SHOW_UI!"=="1" echo [!] Could not create temporary directory: "%WORK%"
     if "!BG_MODE!"=="1" (
         echo [%DATE% %TIME%] ERROR: Could not create temporary directory >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
         call :cleanup_bg
@@ -151,7 +157,7 @@ if not exist "%WORK%" (
 :: ----------------------------------------------------------------------------
 :: [1/5] (15%) Resolve SERVER_URL
 :: ----------------------------------------------------------------------------
-echo [Cosy] [1/5] (15%%) Resolving Cosy Classroom server...
+if "!SHOW_UI!"=="1" echo [Cosy] [1/5] (15%%) Resolving Cosy Classroom server...
 if "!BG_MODE!"=="1" echo [%DATE% %TIME%] [1/5] Resolving server >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 
 if not defined SERVER_URL (
@@ -191,24 +197,26 @@ if not defined SERVER_URL (
 if not defined SERVER_URL (
     set "SERVER_URL=https://sykids.dpdns.org"
 )
-echo [Cosy] [1/5] Selected server: !SERVER_URL!
+if "!SHOW_UI!"=="1" echo [Cosy] [1/5] Selected server: !SERVER_URL!
 if "!BG_MODE!"=="1" echo [%DATE% %TIME%] [1/5] Server: !SERVER_URL! >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 
 :: ----------------------------------------------------------------------------
 :: [2/5] (35%) Download CosySchoolCA.cer
 :: ----------------------------------------------------------------------------
-echo [Cosy] [2/5] (35%%) Downloading root certificate CosySchoolCA.cer...
+if "!SHOW_UI!"=="1" echo [Cosy] [2/5] (35%%) Downloading root certificate CosySchoolCA.cer...
 "!CURL_BIN!" --retry 3 --retry-all-errors -fsSL --connect-timeout 15 --max-time 45 "!SERVER_URL!/cosy/ca.cer" -o "%WORK%\CosySchoolCA.cer" 2>nul
-if exist "%WORK%\CosySchoolCA.cer" (
-    echo [Cosy] [2/5] Downloaded CA certificate successfully.
-) else (
-    echo [Cosy] [2/5] Remote CA not found or using default system CA.
+if "!SHOW_UI!"=="1" (
+    if exist "%WORK%\CosySchoolCA.cer" (
+        echo [Cosy] [2/5] Downloaded CA certificate successfully.
+    ) else (
+        echo [Cosy] [2/5] Remote CA not found or using default system CA.
+    )
 )
 
 :: ----------------------------------------------------------------------------
 :: [3/5] (60%) Download CPInstall.exe + headers
 :: ----------------------------------------------------------------------------
-echo [Cosy] [3/5] (60%%) Downloading system installer CPInstall.exe...
+if "!SHOW_UI!"=="1" echo [Cosy] [3/5] (60%%) Downloading system installer CPInstall.exe...
 if "!BG_MODE!"=="1" echo [%DATE% %TIME%] [3/5] Downloading CPInstall.exe >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 
 "!CURL_BIN!" --retry 3 --retry-all-errors -fsSL --connect-timeout 15 --max-time 180 -D "%WORK%\headers.txt" "!SERVER_URL!/update?client" -o "%WORK%\CPInstall.exe" 2>nul
@@ -218,7 +226,7 @@ if not exist "%WORK%\CPInstall.exe" (
 )
 
 if not exist "%WORK%\CPInstall.exe" (
-    echo [!] Error: Unable to download CPInstall.exe from !SERVER_URL!.
+    if "!SHOW_UI!"=="1" echo [!] Error: Unable to download CPInstall.exe from !SERVER_URL!.
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] ERROR: Download failed >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
     rd /s /q "%WORK%" 2>nul
     if "!BG_MODE!"=="1" call :cleanup_bg
@@ -228,7 +236,7 @@ if not exist "%WORK%\CPInstall.exe" (
 :: ----------------------------------------------------------------------------
 :: [4/5] (75%) Parse headers & Verify SHA256 integrity
 :: ----------------------------------------------------------------------------
-echo [Cosy] [4/5] (75%%) Verifying integrity and security parameters...
+if "!SHOW_UI!"=="1" echo [Cosy] [4/5] (75%%) Verifying integrity and security parameters...
 set "EXPECTED_SHA="
 set "WS_URL="
 set "CERT_PIN="
@@ -269,23 +277,25 @@ set "ACTUAL_SHA=!ACTUAL_SHA: =!"
 
 if defined EXPECTED_SHA (
     if /i not "!ACTUAL_SHA!"=="!EXPECTED_SHA!" (
-        echo [!] Critical Error: SHA256 hash mismatch!
-        echo     Expected: !EXPECTED_SHA!
-        echo     Actual  : !ACTUAL_SHA!
+        if "!SHOW_UI!"=="1" (
+            echo [!] Critical Error: SHA256 hash mismatch!
+            echo     Expected: !EXPECTED_SHA!
+            echo     Actual  : !ACTUAL_SHA!
+        )
         if "!BG_MODE!"=="1" echo [%DATE% %TIME%] ERROR: Hash mismatch >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
         rd /s /q "%WORK%" 2>nul
         if "!BG_MODE!"=="1" call :cleanup_bg
         exit /b 1
     )
-    echo [Cosy] [4/5] SHA256 integrity verified (!ACTUAL_SHA:~0,16!...^).
+    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] SHA256 integrity verified (!ACTUAL_SHA:~0,16!...^).
 ) else (
-    echo [Cosy] [4/5] Calculated SHA256 hash (!ACTUAL_SHA:~0,16!...^).
+    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] Calculated SHA256 hash (!ACTUAL_SHA:~0,16!...^).
 )
 
 :: ----------------------------------------------------------------------------
 :: [5/5] (90% -> 100%) Execute CPInstall.exe
 :: ----------------------------------------------------------------------------
-echo [Cosy] [5/5] (90%%) Launching classroom monitoring service installation...
+if "!SHOW_UI!"=="1" echo [Cosy] [5/5] (90%%) Launching classroom monitoring service installation...
 if "!BG_MODE!"=="1" echo [%DATE% %TIME%] [5/5] Running CPInstall.exe >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 
 pushd "%WORK%"
@@ -298,12 +308,21 @@ if "!VERIFY_ONLY!"=="1" (
     echo [Cosy] [100%%] E2E verification passed (Beacon + CA + SHA256 + CPInstall --selftest OK^)!
     exit /b 0
 )
+
+if "!SHOW_UI!"=="0" if "!BG_MODE!"=="0" (
+    start "" /D "%WORK%" "%WORK%\CPInstall.exe" --install-auto --ws-url "!WS_URL!" --cert-pin "!CERT_PIN!" --enroll-ticket "!USE_TICKET!"
+    popd
+    del /f /q "%TEMP%\cosy-win.cmd" "%TEMP%\cosy-setup.cmd" >nul 2>&1
+    if "!NO_CLOSE!"=="1" exit /b 0
+    exit 0
+)
+
 "%WORK%\CPInstall.exe" --install-auto --ws-url "!WS_URL!" --cert-pin "!CERT_PIN!" --enroll-ticket "!USE_TICKET!"
 set "CP_EXIT=!ERRORLEVEL!"
 popd
 
 if !CP_EXIT! neq 0 (
-    echo [!] CPInstall.exe exited with error code !CP_EXIT!.
+    if "!SHOW_UI!"=="1" echo [!] CPInstall.exe exited with error code !CP_EXIT!.
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] ERROR: CPInstall exit !CP_EXIT! >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
     rd /s /q "%WORK%" 2>nul
     if "!BG_MODE!"=="1" call :cleanup_bg
@@ -312,15 +331,16 @@ if !CP_EXIT! neq 0 (
 
 sc query cpsv >nul 2>&1
 if !ERRORLEVEL! equ 0 (
-    echo [Cosy] [100%%] Successfully installed system services (cpsv / cpwg / cpag^)!
+    if "!SHOW_UI!"=="1" echo [Cosy] [100%%] Successfully installed system services (cpsv / cpwg / cpag^)!
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] [100%%] Success: cpsv installed >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 ) else (
-    echo [Cosy] Installation process completed.
+    if "!SHOW_UI!"=="1" echo [Cosy] Installation process completed.
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] Completed >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 )
 
 rd /s /q "%WORK%" 2>nul
 if "!BG_MODE!"=="1" call :cleanup_bg
+if "!SHOW_UI!"=="0" if "!NO_CLOSE!"=="0" exit 0
 exit /b 0
 
 :cleanup_bg
