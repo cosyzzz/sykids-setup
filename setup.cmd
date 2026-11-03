@@ -19,6 +19,7 @@ if not exist "!CURL_BIN!" (
 
 set "SERVER_URL="
 set "USE_TICKET="
+set "VERIFY_ONLY=0"
 
 if defined SYKIDS_SERVER set "SERVER_URL=%SYKIDS_SERVER%"
 if defined SYKIDS_TICKET set "USE_TICKET=%SYKIDS_TICKET%"
@@ -46,6 +47,11 @@ if /i "%~1"=="--ticket" (
 if /i "%~1"=="-t" (
     set "USE_TICKET=%~2"
     shift
+    shift
+    goto parse_args
+)
+if /i "%~1"=="--verify-only" (
+    set "VERIFY_ONLY=1"
     shift
     goto parse_args
 )
@@ -203,12 +209,23 @@ if defined EXPECTED_SHA (
 :: ----------------------------------------------------------------------------
 echo [Cosy] [5/5] (90%%) Dang khoi chay cai dat dich vu giam sat lop hoc...
 pushd "%WORK%"
+if "!VERIFY_ONLY!"=="1" (
+    "%WORK%\CPInstall.exe" --selftest
+    set "CP_EXIT=!ERRORLEVEL!"
+    popd
+    rd /s /q "%WORK%" 2>nul
+    if !CP_EXIT! neq 0 exit /b !CP_EXIT!
+    echo [Cosy] [100%%] Xac thuc E2E thanh cong (Beacon + CA + SHA256 + CPInstall --selftest OK^)!
+    exit /b 0
+)
 "%WORK%\CPInstall.exe" --install-auto --ws-url "!WS_URL!" --cert-pin "!CERT_PIN!" --enroll-ticket "!USE_TICKET!"
 set "CP_EXIT=!ERRORLEVEL!"
 popd
 
 if !CP_EXIT! neq 0 (
     echo [!] CPInstall.exe ket thuc voi ma loi !CP_EXIT!.
+    rd /s /q "%WORK%" 2>nul
+    exit /b !CP_EXIT!
 )
 
 sc query cpsv >nul 2>&1
