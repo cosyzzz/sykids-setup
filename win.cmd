@@ -1,9 +1,8 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-chcp 65001 >nul 2>&1
 
 :: ============================================================================
-:: Cosy Classroom System — Native Windows Installer
+:: Cosy Classroom System -- Native Windows Installer
 :: Pure Native Batch Script (curl.exe + certutil.exe + CPInstall.exe)
 :: Zero PowerShell dependency - Zero ExecutionPolicy friction
 :: ============================================================================
@@ -70,7 +69,7 @@ goto parse_args
 
 :print_usage
 echo ============================================================================
-echo  Cosy Classroom System — Windows Workstation Bootstrap
+echo  Cosy Classroom System -- Windows Workstation Bootstrap
 echo ============================================================================
 echo Cu phap:
 echo   setup.cmd [--server ^<URL^>] [--ticket ^<TICKET^>]
@@ -80,7 +79,7 @@ exit /b 0
 
 :args_done
 echo ============================================================================
-echo  Cosy Classroom System — Windows Workstation Bootstrap
+echo  Cosy Classroom System -- Windows Workstation Bootstrap
 echo ============================================================================
 
 :: Tao thu muc lam viec tam thoi an toan
