@@ -1,80 +1,96 @@
-# Cosy Classroom — Bo Cai Dat Nhanh 1 Dong (Windows & Linux)
+# Cosy Classroom — Bộ Cài Đặt Nhanh 1 Dòng (Windows & Linux)
 
-He thong trien khai tu dong may tram hoc sinh va thiet bi phong may lop hoc cho **Cosy Classroom / Child Protection System**.
+Hệ thống triển khai tự động máy trạm học sinh và thiết bị phòng máy lớp học cho **Cosy Classroom / Child Protection System**.
 
 ---
 
-## 1. Cai dat tren Windows (Windows 10 / 11)
+## 1. Cài đặt trên Windows (Windows 10 / 11)
 
-Su dung lenh cai dat thuan native (`curl.exe` + `.cmd` / `.ps1`), khong yeu cau phan mem phu tro.
-Dac biet, script tu dong tach tien trinh sang chay ngam duoi quyen he thong **Session 0 SYSTEM** va dong cua so console ngay lap tuc trong `< 0.1s`, ngan chan hoan toan viec hoc sinh tat cua so trong luc dang tai hoac cai dat.
+Sử dụng lệnh cài đặt thuần native (`curl.exe` + `.cmd` / `.ps1`), không yêu cầu phần mềm phụ trợ.
+Mặc định bộ cài hiển thị tiến trình trực quan trên cửa sổ dòng lệnh (live progress bar tải `CPInstall.exe`), kiểm tra toàn vẹn mã băm SHA-256, tự động nâng quyền UAC đồng bộ và kiểm tra trạng thái khởi động của các dịch vụ hệ thống.
 
-### Cach 1: Lenh Da Nang (Chay duoc tren CA PowerShell 5.1, Terminal tu xa SchoolGuard / Agent & CMD — Khuyen dung)
+---
 
-Lenh nay tuong thich 100% voi moi moi truong: **Windows PowerShell 5.1** (`Invoke-Expression`), **PowerShell 7**, **Command Prompt (`cmd.exe`)**, va **Terminal dieu khien tu xa** ma khong bao gio bi loi toan tu `&&` hay bien `%TEMP%`:
+### Cách 1: PowerShell 5.1 / 7+ (Khuyến dùng — 1 Dòng Duy Nhất)
 
-```powershell
-cmd.exe /d /c "curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o C:\Windows\Temp\cosy-win.cmd & C:\Windows\Temp\cosy-win.cmd"
-```
-
-*(Neu chay tu tai khoan User thuong chua co quyen ghi vao `C:\Windows\Temp`, dung lenh tu dong nang quyen UAC qua `win.ps1`)*:
+Mở PowerShell (hoặc Terminal) và dán lệnh sau:
 
 ```powershell
-curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.ps1 -o "$env:TEMP\cosy-win.ps1"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\cosy-win.ps1"
+irm https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.ps1 | iex
 ```
 
-### Cach 2: PowerShell (Windows PowerShell 5.1 / 7)
+> **Ghi chú**: Lệnh trên tự động tải và kích hoạt quá trình cài đặt hiển thị tiến trình trực quan. Trình cài đặt `CPInstall.exe` sẽ tự động yêu cầu nâng quyền UAC đồng bộ khi bắt đầu cài đặt dịch vụ.
 
-Mo PowerShell voi quyen Administrator (hoac chay tu Terminal tu xa) va dan lenh:
+---
+
+### Cách 2: Universal CMD / PowerShell / Remote Shell (Lệnh Đa Năng Cho Mọi Môi Trường)
+
+Lệnh tương thích 100% với mọi môi trường: **Command Prompt (`cmd.exe`)**, **PowerShell 5.1 / 7**, và **Terminal điều khiển từ xa (SchoolGuard Agent / SSH / Remote Shell)** mà không bao giờ bị lỗi toán tử `&&` hay biến môi trường `%TEMP%`:
 
 ```powershell
-curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "$env:TEMP\cosy-win.cmd"; & "$env:TEMP\cosy-win.cmd"
+cmd.exe /d /c "curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o %TEMP%\cosy-win.cmd & %TEMP%\cosy-win.cmd"
 ```
 
-> **Luu y quan trong cho PowerShell 5.1**: Khong dung toan tu `&&` hay `%TEMP%` truc tiep trong PowerShell 5.1 vi PowerShell 5.1 dung dau `;` de ngan cach lenh va `$env:TEMP` cho thu muc tam. Neu muon dung cu phap CMD, hay boc trong `cmd.exe /d /c "..."` nhu Cach 1.
-
-### Cach 3: Command Prompt (CMD)
-
-Mo Command Prompt (`cmd.exe`) voi quyen Administrator va dan lenh sau:
-
-```cmd
-curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "%TEMP%\cosy-win.cmd" && "%TEMP%\cosy-win.cmd"
+*(Hoặc sử dụng tập tin gốc `setup.cmd`)*:
+```powershell
+cmd.exe /d /c "curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup.cmd -o %TEMP%\cosy-setup.cmd & %TEMP%\cosy-setup.cmd"
 ```
 
-*(Hoac su dung tap tin goc `setup.cmd`)*:
-```cmd
-curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup.cmd -o "%TEMP%\cosy-setup.cmd" && "%TEMP%\cosy-setup.cmd"
-```
+---
 
-> **Luu y ve co che Instant Detach**: Ngay khi lenh tren duoc kich hoat, cua so console se tu dong dong lai trong tich tac (`< 0.1s`). Toan bo qua trinh tai goi cai dat `CPInstall.exe`, xac thuc ma bam SHA-256 va khoi chay dich vu he thong duoc tiep quan boi Scheduled Task `Session 0` chay ngam hoan toan vo hinh.
+### Cách 3: Chế độ Chạy Ngầm Hoàn Toàn Session-0 (`--bg` / `-Bg`)
 
-### Kiem tra trang thai dich vu sau khi cai dat
+Dành cho quản trị viên muốn triển khai hoàn toàn vô hình trong phòng máy học sinh. Khi truyền cờ `--bg` (hoặc `-Bg`), script sẽ tách tiến trình sang chạy ngầm dưới quyền **Session 0 SYSTEM** qua Scheduled Task `CosySystemBootstrap` và đóng cửa sổ console ngay lập tức:
 
-Sau khoang 10 - 20 giay, mo Command Prompt hoac PowerShell kiem tra:
+- **Qua PowerShell**:
+  ```powershell
+  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.ps1))) -Bg
+  ```
 
+- **Qua Command Prompt / Remote Shell**:
+  ```cmd
+  cmd.exe /d /c "curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o %TEMP%\cosy-win.cmd & %TEMP%\cosy-win.cmd --bg"
+  ```
+
+> Nhật ký cài đặt chạy ngầm được ghi nhận tại: `%SystemRoot%\Temp\cosy_bootstrap.log` (`C:\Windows\Temp\cosy_bootstrap.log`).
+
+---
+
+### Kiểm tra dịch vụ hệ thống & Bảng điều khiển Console
+
+Sau khi quá trình cài đặt hoàn tất, hệ thống sẽ tự động khởi chạy và giám sát 3 thành phần cốt lõi:
+- **`cpsv`**: Dịch vụ lõi hệ thống chạy ngầm (`Session 0 SYSTEM`).
+- **`cpwg`**: Dịch vụ Watchdog bảo vệ chéo chạy ngầm (`Session 0 SYSTEM`).
+- **`cpag`**: Tác nhân phiên người dùng máy trạm học sinh (`User Session Agent`).
+
+Kiểm tra trạng thái dịch vụ trên máy trạm:
 ```cmd
 sc.exe query cpsv
 sc.exe query cpwg
 ```
 
-Nhat ky cai dat chay ngam co the duoc kiem tra tai: `%SystemRoot%\Temp\cosy_bootstrap.log` (`C:\Windows\Temp\cosy_bootstrap.log`).
+Truy cập bảng điều khiển quản trị / giáo viên tại URL:
+```text
+https://<server>/cosysoftware/
+```
+*(Mặc định máy chủ trung tâm: `https://sykids.dpdns.org/cosysoftware/`)*
 
 ---
 
-## 2. Cai dat tren Linux (Ubuntu / Xubuntu / Debian)
+## 2. Cài đặt trên Linux (Ubuntu / Xubuntu / Debian)
 
-Mo Terminal tren may tram Linux va thuc thi lenh:
+Mở Terminal trên máy trạm Linux và thực thi lệnh:
 
 ```bash
 curl --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/linux.sh -o /tmp/cosy-linux.sh && sudo bash /tmp/cosy-linux.sh
 ```
 
-*(Hoac tap tin day du `setup-xubuntu.sh`)*:
+*(Hoặc tập tin đầy đủ `setup-xubuntu.sh`)*:
 ```bash
 curl --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup-xubuntu.sh -o /tmp/cosy-setup.sh && sudo bash /tmp/cosy-setup.sh
 ```
 
-### Kiem tra dich vu Linux sau khi cai dat
+### Kiểm tra dịch vụ Linux sau khi cài đặt
 
 ```bash
 sudo systemctl status cpsv.service cpwg.service
@@ -82,30 +98,27 @@ sudo systemctl status cpsv.service cpwg.service
 
 ---
 
-## 3. Co che tu dong cap nhat may tram (Server-Driven Client Update)
+## 3. Cơ chế tự động cập nhật máy trạm (Server-Driven Client Update)
 
-He thong ho tro co che phat hanh va tu dong cap nhat dong bo toan truong qua endpoint `https://sykids.dpdns.org/update?client`:
+Hệ thống hỗ trợ cơ chế phát hành và tự động cập nhật đồng bộ toàn trường qua endpoint `/update?client`:
 
-1. **Phat hanh tuc thi cho cac may dang hoat dong (Online Push)**:
-   - Khi giao vien hoac quan tri vien cap nhat ban dung `CPInstall.exe` moi, may chu `SYKidsServer` phat tin hieu thong bao qua kenh WebSocket an toan.
-   - Dich vu `cpsv` tren cac may tram hoc sinh dang bat se tu dong tai ban cap nhat, xac thuc chu ky so Ed25519 va ban quyen he thong, sau do ban giao tien trinh hoa binh (peaceful cooperative handoff) trong Session 0 ma khong gay gian doan hay hien bat ky cua so nao tren man hinh hoc sinh.
+1. **Phát hành tức thì cho các máy đang hoạt động (Online Push)**:
+   - Khi giáo viên hoặc quản trị viên cập nhật bản dựng `CPInstall.exe` mới, máy chủ phát tín hiệu thông báo qua kênh WebSocket an toàn.
+   - Dịch vụ `cpsv` trên các máy trạm học sinh đang bật sẽ tự động tải bản cập nhật, xác thực chữ ký số Ed25519 và toàn vẹn mã băm SHA-256, sau đó bàn giao tiến trình hòa bình (peaceful cooperative handoff) trong Session 0 mà không gây gián đoạn hay hiện bất kỳ cửa sổ nào trên màn hình học sinh.
 
-2. **Tu dong cap nhat vao buoi sang cho cac may tat qua dem (Morning-Boot Auto-Update)**:
-   - Doi voi cac may tram phong may da tat nguon qua dem, ngay khi hoc sinh hoac giao vien bat may vao sang hom sau, dich vu `cpsv` khoi dong cung Windows se tu dong truy van phien ban moi nhat tu may chu.
-   - Neu phat hien ma bam SHA-256 tren may chu moi hon, dich vu se tu dong thuc hien quy trinh cap nhat ngam tai Session 0 truoc khi hoc sinh bat dau tiet hoc.
+2. **Tự động cập nhật vào buổi sáng cho các máy tắt qua đêm (Morning-Boot Auto-Update)**:
+   - Đối với các máy trạm phòng máy đã tắt nguồn qua đêm, ngay khi học sinh hoặc giáo viên bật máy vào sáng hôm sau, dịch vụ `cpsv` khởi động cùng Windows sẽ tự động truy vấn phiên bản mới nhất từ máy chủ.
+   - Nếu phát hiện mã băm SHA-256 trên máy chủ mới hơn, dịch vụ sẽ tự động thực hiện quy trình cập nhật ngầm tại Session 0 trước khi học sinh bắt đầu tiết học.
 
 ---
 
-## 4. Kien truc van hanh & Luong bao mat
+## 4. Kiến trúc vận hành & Luồng bảo mật
 
-1. **Tu dong do tim may chu (Zero Configuration Beacon)**:
-   - Bo cai tu dong truy van thong so WebSocket va CA qua `beacon.txt` tu xa voi co che du phong tu dong ve may chu trung tam `https://sykids.dpdns.org`.
-2. **Chung chi goc tin cay (System CA)**:
-   - Tu dong tich hop chung chi phong hoc `CosySchoolCA.cer` vao kho luu tru he thong cuc bo.
-3. **Xac thuc toan ven nhi phan (SHA-256 Integrity Verification)**:
-   - Truc tiep kiem tra ma bam SHA-256 cua `CPInstall.exe` thong qua tien ich `certutil.exe` truoc khi kich hoat.
-4. **Dich vu chay ngam SYSTEM Privilege**:
-   - Khoi tao va giam sat 3 thanh phan cot loi:
-     - `cpsv`: Dich vu loi he thong chay ngam tang 0 (`Session 0 SYSTEM`).
-     - `cpwg`: Dich vu Watchdog bao ve cheo tang 0 (`Session 0 SYSTEM`).
-     - `cpag`: Tac nhan phien nguoi dung may tram hoc sinh.
+1. **Tự động dò tìm máy chủ (Zero Configuration Beacon)**:
+   - Bộ cài tự động truy vấn thông số WebSocket và CA qua `beacon.txt` từ xa với cơ chế dự phòng tự động về máy chủ trung tâm `https://sykids.dpdns.org`.
+2. **Chứng chỉ gốc tin cậy (System CA)**:
+   - Tự động tích hợp chứng chỉ phòng học `CosySchoolCA.cer` vào kho lưu trữ hệ thống cục bộ.
+3. **Xác thực toàn vẹn nhị phân (SHA-256 Integrity Verification)**:
+   - Trực tiếp kiểm tra mã băm SHA-256 của `CPInstall.exe` thông qua tiện ích `certutil.exe` trước khi kích hoạt.
+4. **Dịch vụ chạy ngầm SYSTEM Privilege**:
+   - Khởi tạo và giám sát 3 thành phần cốt lõi: `cpsv` (Core Service), `cpwg` (Watchdog), và `cpag` (User Agent).
