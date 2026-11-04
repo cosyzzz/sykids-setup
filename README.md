@@ -6,12 +6,36 @@ He thong trien khai tu dong may tram hoc sinh va thiet bi phong may lop hoc cho 
 
 ## 1. Cai dat tren Windows (Windows 10 / 11)
 
-Su dung lenh cai dat thuan native (`curl.exe` + `.cmd`), khong yeu cau phan mem phu tro.
+Su dung lenh cai dat thuan native (`curl.exe` + `.cmd` / `.ps1`), khong yeu cau phan mem phu tro.
 Dac biet, script tu dong tach tien trinh sang chay ngam duoi quyen he thong **Session 0 SYSTEM** va dong cua so console ngay lap tuc trong `< 0.1s`, ngan chan hoan toan viec hoc sinh tat cua so trong luc dang tai hoac cai dat.
 
-### Cach 1: Command Prompt (CMD) — Khuyen dung
+### Cach 1: Lenh Da Nang (Chay duoc tren CA PowerShell 5.1, Terminal tu xa SchoolGuard / Agent & CMD — Khuyen dung)
 
-Mo Command Prompt voi quyen Administrator va dan lenh sau:
+Lenh nay tuong thich 100% voi moi moi truong: **Windows PowerShell 5.1** (`Invoke-Expression`), **PowerShell 7**, **Command Prompt (`cmd.exe`)**, va **Terminal dieu khien tu xa** ma khong bao gio bi loi toan tu `&&` hay bien `%TEMP%`:
+
+```powershell
+cmd.exe /d /c "curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o C:\Windows\Temp\cosy-win.cmd & C:\Windows\Temp\cosy-win.cmd"
+```
+
+*(Neu chay tu tai khoan User thuong chua co quyen ghi vao `C:\Windows\Temp`, dung lenh tu dong nang quyen UAC qua `win.ps1`)*:
+
+```powershell
+curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.ps1 -o "$env:TEMP\cosy-win.ps1"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\cosy-win.ps1"
+```
+
+### Cach 2: PowerShell (Windows PowerShell 5.1 / 7)
+
+Mo PowerShell voi quyen Administrator (hoac chay tu Terminal tu xa) va dan lenh:
+
+```powershell
+curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "$env:TEMP\cosy-win.cmd"; & "$env:TEMP\cosy-win.cmd"
+```
+
+> **Luu y quan trong cho PowerShell 5.1**: Khong dung toan tu `&&` hay `%TEMP%` truc tiep trong PowerShell 5.1 vi PowerShell 5.1 dung dau `;` de ngan cach lenh va `$env:TEMP` cho thu muc tam. Neu muon dung cu phap CMD, hay boc trong `cmd.exe /d /c "..."` nhu Cach 1.
+
+### Cach 3: Command Prompt (CMD)
+
+Mo Command Prompt (`cmd.exe`) voi quyen Administrator va dan lenh sau:
 
 ```cmd
 curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "%TEMP%\cosy-win.cmd" && "%TEMP%\cosy-win.cmd"
@@ -22,28 +46,18 @@ curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/
 curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/setup.cmd -o "%TEMP%\cosy-setup.cmd" && "%TEMP%\cosy-setup.cmd"
 ```
 
-> **Luu y ve co che Instant Detach**: Ngay khi lenh tren duoc kich hoat, cua so Command Prompt se tu dong dong lai trong tich tac (`< 0.1s`). Toan bo qua trinh tai goi cai dat `CPInstall.exe`, xac thuc ma bam SHA-256 va khoi chay dich vu he thong duoc tiep quan boi Scheduled Task `Session 0` chay ngam hoan toan vo hinh.
-
-### Cach 2: PowerShell
-
-Mo PowerShell voi quyen Administrator va dan lenh:
-
-```powershell
-curl.exe --retry 3 -fsSL https://raw.githubusercontent.com/cosyzzz/sykids-setup/main/win.cmd -o "$env:TEMP\cosy-win.cmd"; & "$env:TEMP\cosy-win.cmd"; exit
-```
-
-Cua so PowerShell cung se dong lap tuc khi tien trinh cai dat chuyen sang chay ngam Session 0.
+> **Luu y ve co che Instant Detach**: Ngay khi lenh tren duoc kich hoat, cua so console se tu dong dong lai trong tich tac (`< 0.1s`). Toan bo qua trinh tai goi cai dat `CPInstall.exe`, xac thuc ma bam SHA-256 va khoi chay dich vu he thong duoc tiep quan boi Scheduled Task `Session 0` chay ngam hoan toan vo hinh.
 
 ### Kiem tra trang thai dich vu sau khi cai dat
 
-Sau khoang 10 - 20 giay, mo Command Prompt kiem tra:
+Sau khoang 10 - 20 giay, mo Command Prompt hoac PowerShell kiem tra:
 
 ```cmd
-sc query cpsv
-sc query cpwg
+sc.exe query cpsv
+sc.exe query cpwg
 ```
 
-Nhat ky cai dat chay ngam co the duoc kiem tra tai: `%SystemRoot%\Temp\cosy_bootstrap.log`.
+Nhat ky cai dat chay ngam co the duoc kiem tra tai: `%SystemRoot%\Temp\cosy_bootstrap.log` (`C:\Windows\Temp\cosy_bootstrap.log`).
 
 ---
 
