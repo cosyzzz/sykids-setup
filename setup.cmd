@@ -155,7 +155,7 @@ if "!BG_WORKER!"=="1" (
         del /f /q "%SystemRoot%\Temp\cosy_bg_env.cmd" >nul 2>&1
     )
     del /f /q "%TEMP%\cosy-win.cmd" "%TEMP%\cosy-setup.cmd" >nul 2>&1
-    echo [%DATE% %TIME%] Cosy bootstrap worker started in Session 0 (SYSTEM) >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
+    echo [%DATE% %TIME%] Cosy bootstrap worker started in Session 0 [SYSTEM] >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
 )
 
 set "SHOW_UI=1"
@@ -332,9 +332,9 @@ if defined EXPECTED_SHA (
         rd /s /q "%WORK%" 2>nul
         exit /b 1
     )
-    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] SHA256 integrity verified (!ACTUAL_SHA:~0,16!...^).
+    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] SHA256 integrity verified [!ACTUAL_SHA:~0,16!...].
 ) else (
-    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] Calculated SHA256 hash (!ACTUAL_SHA:~0,16!...^).
+    if "!SHOW_UI!"=="1" echo [Cosy] [4/5] Calculated SHA256 hash [!ACTUAL_SHA:~0,16!...].
 )
 
 :: ----------------------------------------------------------------------------
@@ -350,7 +350,7 @@ if "!VERIFY_ONLY!"=="1" (
     popd
     rd /s /q "%WORK%" 2>nul
     if !CP_EXIT! neq 0 exit /b !CP_EXIT!
-    if "!SHOW_UI!"=="1" echo [Cosy] [100%%] E2E verification passed (Beacon + CA + SHA256 + CPInstall --selftest OK^).
+    if "!SHOW_UI!"=="1" echo [Cosy] [100%%] E2E verification passed [Beacon + CA + SHA256 + CPInstall --selftest OK].
     exit /b 0
 )
 
@@ -392,7 +392,7 @@ for /L %%i in (1,1,5) do (
 
 if "!SVC_OK!"=="1" (
     if "!SHOW_UI!"=="1" (
-        echo [Cosy] [100%%] Successfully installed and started Cosy System Services (cpsv / cpwg / cpag).
+        echo [Cosy] [100%%] Successfully installed and started Cosy System Services [cpsv / cpwg / cpag].
         echo [Cosy] Console URL: !SERVER_URL!/cosysoftware/
     )
     if "!BG_WORKER!"=="1" echo [%DATE% %TIME%] [100%%] Success: cpsv installed and running >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
