@@ -13,7 +13,7 @@ if not exist "!CURL_BIN!" (
     for /f "tokens=*" %%c in ('where curl.exe 2^>nul') do set "CURL_BIN=%%c"
 )
 if not exist "!CURL_BIN!" (
-    echo [!] curl.exe was not found on this system. Please update Windows 10/11.
+    echo [ERROR] curl.exe was not found on this system. Please update Windows 10/11.
     exit /b 1
 )
 
@@ -146,7 +146,7 @@ if "!SHOW_UI!"=="1" (
 set "WORK=%TEMP%\cosy_install_%RANDOM%_%RANDOM%"
 mkdir "%WORK%" 2>nul
 if not exist "%WORK%" (
-    if "!SHOW_UI!"=="1" echo [!] Could not create temporary directory: "%WORK%"
+    if "!SHOW_UI!"=="1" echo [ERROR] Could not create temporary directory: "%WORK%"
     if "!BG_MODE!"=="1" (
         echo [%DATE% %TIME%] ERROR: Could not create temporary directory >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
         call :cleanup_bg
@@ -226,7 +226,7 @@ if not exist "%WORK%\CPInstall.exe" (
 )
 
 if not exist "%WORK%\CPInstall.exe" (
-    if "!SHOW_UI!"=="1" echo [!] Error: Unable to download CPInstall.exe from !SERVER_URL!.
+    if "!SHOW_UI!"=="1" echo [ERROR] Error: Unable to download CPInstall.exe from !SERVER_URL!.
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] ERROR: Download failed >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
     rd /s /q "%WORK%" 2>nul
     if "!BG_MODE!"=="1" call :cleanup_bg
@@ -278,7 +278,7 @@ set "ACTUAL_SHA=!ACTUAL_SHA: =!"
 if defined EXPECTED_SHA (
     if /i not "!ACTUAL_SHA!"=="!EXPECTED_SHA!" (
         if "!SHOW_UI!"=="1" (
-            echo [!] Critical Error: SHA256 hash mismatch!
+            echo [ERROR] Critical Error: SHA256 hash mismatch!
             echo     Expected: !EXPECTED_SHA!
             echo     Actual  : !ACTUAL_SHA!
         )
@@ -322,7 +322,7 @@ set "CP_EXIT=!ERRORLEVEL!"
 popd
 
 if !CP_EXIT! neq 0 (
-    if "!SHOW_UI!"=="1" echo [!] CPInstall.exe exited with error code !CP_EXIT!.
+    if "!SHOW_UI!"=="1" echo [ERROR] CPInstall.exe exited with error code !CP_EXIT!.
     if "!BG_MODE!"=="1" echo [%DATE% %TIME%] ERROR: CPInstall exit !CP_EXIT! >> "%SystemRoot%\Temp\cosy_bootstrap.log" 2>&1
     rd /s /q "%WORK%" 2>nul
     if "!BG_MODE!"=="1" call :cleanup_bg
